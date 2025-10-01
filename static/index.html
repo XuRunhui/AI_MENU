@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Taste Guide - Interactive Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .taste-card { transition: all 0.3s ease; }
+        .taste-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .spice-indicator { display: inline-block; width: 12px; height: 12px; margin: 0 2px; }
+        .spice-active { background-color: #ef4444; }
+        .spice-inactive { background-color: #e5e7eb; }
+        .loading { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-utensils text-3xl mr-3"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Menu Taste Guide</h1>
+                        <p class="text-blue-100">AI-Powered Restaurant Recommendations</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <button onclick="showTab('restaurant')" class="nav-btn bg-white bg-opacity-20 px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                        <i class="fas fa-search mr-2"></i>Find Restaurant
+                    </button>
+                    <button onclick="showTab('menu')" class="nav-btn bg-white bg-opacity-20 px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                        <i class="fas fa-camera mr-2"></i>Scan Menu
+                    </button>
+                    <button onclick="showTab('taste')" class="nav-btn bg-white bg-opacity-20 px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                        <i class="fas fa-brain mr-2"></i>Taste Analysis
+                    </button>
+                    <button onclick="showTab('combo')" class="nav-btn bg-white bg-opacity-20 px-4 py-2 rounded-lg hover:bg-opacity-30 transition">
+                        <i class="fas fa-utensils mr-2"></i>Combo Suggestions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+
+        <!-- Restaurant Search Tab -->
+        <div id="restaurant-tab" class="tab-content">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-search text-blue-600 mr-3"></i>
+                    Find Restaurant
+                </h2>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Restaurant Name</label>
+                        <input type="text" id="restaurant-name"
+                               placeholder="e.g., Szechuan Chef"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        <input type="text" id="restaurant-city"
+                               placeholder="e.g., Seattle, WA"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <button onclick="findRestaurant()"
+                        class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+                    <i class="fas fa-search mr-2"></i>Find Restaurant
+                </button>
+
+                <div id="restaurant-result" class="mt-6 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Menu Scan Tab -->
+        <div id="menu-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-camera text-green-600 mr-3"></i>
+                    Menu OCR Demo
+                </h2>
+
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 mb-4">Upload menu images to extract dish names and prices</p>
+                    <input type="file" id="menu-images" multiple accept="image/*" class="hidden">
+                    <button onclick="document.getElementById('menu-images').click()"
+                            class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                        Choose Images
+                    </button>
+                </div>
+
+                <div id="menu-preview" class="mt-6 hidden"></div>
+                <div id="menu-result" class="mt-6"></div>
+            </div>
+        </div>
+
+        <!-- Taste Analysis Tab -->
+        <div id="taste-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-brain text-purple-600 mr-3"></i>
+                    Taste Analysis
+                </h2>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dish Name</label>
+                        <input type="text" id="dish-name"
+                               placeholder="e.g., Mapo Tofu"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Restaurant</label>
+                        <input type="text" id="dish-restaurant"
+                               placeholder="e.g., Szechuan Chef"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <button onclick="analyzeTaste()"
+                        class="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition flex items-center">
+                    <i class="fas fa-magic mr-2"></i>Analyze Taste
+                </button>
+
+                <div id="taste-result" class="mt-6"></div>
+            </div>
+        </div>
+
+        <!-- Combo Suggestions Tab -->
+        <div id="combo-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-utensils text-orange-600 mr-3"></i>
+                    Combo Recommendations
+                </h2>
+
+                <div class="grid md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Party Size</label>
+                        <select id="party-size" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                            <option value="1">1 person</option>
+                            <option value="2" selected>2 people</option>
+                            <option value="3">3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5+ people</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget ($)</label>
+                        <input type="number" id="budget" placeholder="60" min="20" max="200"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Spice Level</label>
+                        <select id="spice-preference" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                            <option value="0">No spice</option>
+                            <option value="1">Mild</option>
+                            <option value="2" selected>Medium</option>
+                            <option value="3">Very spicy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Dietary Restrictions</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="dietary-constraint mr-2" value="vegetarian">
+                            <span class="text-sm">Vegetarian</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="dietary-constraint mr-2" value="vegan">
+                            <span class="text-sm">Vegan</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="dietary-constraint mr-2" value="gluten-free">
+                            <span class="text-sm">Gluten-free</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="dietary-constraint mr-2" value="no-peanuts">
+                            <span class="text-sm">No Peanuts</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="getComboRecommendations()"
+                        class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition flex items-center">
+                    <i class="fas fa-magic mr-2"></i>Get Recommendations
+                </button>
+
+                <div id="combo-result" class="mt-6"></div>
+            </div>
+        </div>
+
+        <!-- Demo Data Section -->
+        <div class="bg-blue-50 rounded-lg p-6">
+            <h3 class="text-lg font-bold mb-4 flex items-center">
+                <i class="fas fa-flask text-blue-600 mr-2"></i>
+                Try With Demo Data
+            </h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button onclick="loadDemoRestaurant()"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+                    Load Demo Restaurant
+                </button>
+                <button onclick="loadDemoMenu()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm">
+                    Load Demo Menu
+                </button>
+                <button onclick="loadDemoTaste()"
+                        class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
+                    Load Demo Taste
+                </button>
+                <button onclick="loadDemoCombo()"
+                        class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition text-sm">
+                    Load Demo Combo
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="static/app.js"></script>
+</body>
+</html>
