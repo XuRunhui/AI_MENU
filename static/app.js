@@ -175,52 +175,161 @@ async function processMenuImages(files) {
     resultDiv.innerHTML = '<div class="flex items-center mt-4"><i class="fas fa-spinner loading mr-2"></i>Processing menu images with OCR...</div>';
 
     try {
-        await simulateDelay(2000);
+        // Create FormData for file upload
+        const formData = new FormData();
 
-        // Mock OCR results
-        const mockMenuItems = [
-            { name: "Kung Pao Chicken", price: 16.95, section: "Main Dishes", confidence: 0.92 },
-            { name: "Mapo Tofu", price: 14.95, section: "Main Dishes", confidence: 0.88 },
-            { name: "Dry-Fried Green Beans", price: 12.95, section: "Vegetables", confidence: 0.95 },
-            { name: "Dan Dan Noodles", price: 13.95, section: "Noodles", confidence: 0.89 },
-            { name: "Hot and Sour Soup", price: 8.95, section: "Soups", confidence: 0.91 },
-            { name: "Steamed Rice", price: 3.95, section: "Sides", confidence: 0.97 }
-        ];
+        // Add all images
+        for (let i = 0; i < files.length; i++) {
+            formData.append('images', files[i]);
+        }
 
-        currentMenu = mockMenuItems;
-        displayMenuResults(mockMenuItems);
+        // Add optional restaurant context
+        const restaurantName = document.getElementById('restaurant-name').value;
+        const city = document.getElementById('restaurant-city').value;
+
+        if (restaurantName) {
+            formData.append('restaurant_name', restaurantName);
+        }
+        if (city) {
+            formData.append('city', city);
+        }
+
+        // Call the actual OCR API
+        const response = await fetch('/api/ocr/menu', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`OCR failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Convert menu_structure (dict by category) to flat list for compatibility
+        let menuItems = [];
+        if (data.menu_structure) {
+            for (const [category, items] of Object.entries(data.menu_structure)) {
+                for (const item of items) {
+                    menuItems.push({
+                        ...item,
+                        section: category,
+                        price: item.price || 0
+                    });
+                }
+            }
+        }
+
+        currentMenu = menuItems;
+
+        // Display results with stats
+        if (menuItems && menuItems.length > 0) {
+            displayMenuResults(menuItems, data.processing_stats);
+        } else {
+            resultDiv.innerHTML = `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                        <div>
+                            <p class="font-bold text-yellow-800">No menu items detected</p>
+                            <p class="text-yellow-700 text-sm mt-1">Try uploading a clearer image or a different menu page.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
     } catch (error) {
+        console.error('OCR Error:', error);
         showError('Failed to process menu images: ' + error.message);
+        resultDiv.innerHTML = `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                    <div>
+                        <p class="font-bold text-red-800">OCR Processing Failed</p>
+                        <p class="text-red-700 text-sm mt-1">${error.message}</p>
+                        <p class="text-red-600 text-xs mt-2">Make sure Tesseract OCR is installed on your system.</p>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 }
 
-function displayMenuResults(menuItems) {
-    const html = `
-        <div class="fade-in">
-            <h3 class="text-lg font-bold mb-4 flex items-center">
-                <i class="fas fa-list-ul text-green-600 mr-2"></i>
-                Extracted Menu Items (${menuItems.length})
-            </h3>
+function displayMenuResults(menuItems, stats = null) {
+    const statsHtml = stats ? `
+        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+            <h4 class="font-bold text-blue-800 mb-2">Processing Statistics:</h4>
+            <div class="grid md:grid-cols-4 gap-3 text-sm">
+                <div class="text-blue-700">
+                    <i class="fas fa-image mr-1"></i>
+                    ${stats.images_processed || 1} image(s) processed
+                </div>
+                <div class="text-blue-700">
+                    <i class="fas fa-utensils mr-1"></i>
+                    ${stats.total_items_detected} items detected
+                </div>
+                <div class="text-blue-700">
+                    <i class="fas fa-dollar-sign mr-1"></i>
+                    ${stats.items_with_prices} with prices
+                </div>
+                <div class="text-blue-700">
+                    <i class="fas fa-layer-group mr-1"></i>
+                    ${stats.sections_detected ? stats.sections_detected.length : 0} sections
+                </div>
+            </div>
+        </div>
+    ` : '';
 
-            <div class="grid gap-3">
-                ${menuItems.map(item => `
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div class="flex-1">
-                            <div class="font-medium">${item.name}</div>
-                            <div class="text-sm text-gray-600">${item.section}</div>
+    // Group items by category
+    const itemsByCategory = {};
+    menuItems.forEach(item => {
+        const category = item.section || 'Other';
+        if (!itemsByCategory[category]) {
+            itemsByCategory[category] = [];
+        }
+        itemsByCategory[category].push(item);
+    });
+
+    const categoriesHtml = Object.entries(itemsByCategory).map(([category, items]) => `
+        <div class="mb-6">
+            <h4 class="text-lg font-bold text-gray-800 mb-3 pb-2 border-b-2 border-green-600 flex items-center">
+                <i class="fas fa-folder text-green-600 mr-2"></i>
+                ${category} (${items.length})
+            </h4>
+            <div class="grid gap-2">
+                ${items.map(item => `
+                    <div class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                        <div class="flex justify-between items-center">
+                            <div class="flex-1">
+                                <div class="font-medium">${item.name}</div>
+                                ${item.description ? `<div class="text-sm text-gray-600 mt-1">${item.description}</div>` : ''}
+                            </div>
+                            <div class="text-right ml-4">
+                                <div class="font-bold text-green-600">${item.price_text || (item.price ? '$' + item.price.toFixed(2) : 'N/A')}</div>
+                                <div class="text-xs text-gray-500">${Math.round((item.confidence || 0) * 100)}% conf</div>
+                            </div>
+                            <button onclick="analyzeSpecificTaste('${item.name.replace(/'/g, "\\'")}')"
+                                    class="ml-3 bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition">
+                                Analyze
+                            </button>
                         </div>
-                        <div class="text-right">
-                            <div class="font-bold text-green-600">$${item.price}</div>
-                            <div class="text-xs text-gray-500">${Math.round(item.confidence * 100)}% confidence</div>
-                        </div>
-                        <button onclick="analyzeSpecificTaste('${item.name}')"
-                                class="ml-3 bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition">
-                            Analyze
-                        </button>
                     </div>
                 `).join('')}
             </div>
+        </div>
+    `).join('');
+
+    const html = `
+        <div class="fade-in">
+            ${statsHtml}
+            <h3 class="text-lg font-bold mb-4 flex items-center">
+                <i class="fas fa-list-ul text-green-600 mr-2"></i>
+                Extracted Menu (${menuItems.length} items)
+            </h3>
+
+            ${categoriesHtml}
 
             <div class="mt-6 p-4 bg-blue-50 rounded-lg">
                 <h4 class="font-bold text-blue-800 mb-2">Next Steps:</h4>

@@ -1,0 +1,186 @@
+{
+  "Poutines": [
+    {
+      "name": "Classic",
+      "price": 10.95,
+      "price_text": "$10.95",
+      "confidence": 0.89,
+      "order": 0,
+      "description": "Brown gravy, cheese curds, parsley"
+    },
+    {
+      "name": "Braised beef",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.83,
+      "order": 1,
+      "description": "5 hr braised beef, brown gravy, cheese curds mushrooms, pickled red onions, parsley"
+    },
+    {
+      "name": "Country fried chicken",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.87,
+      "order": 2,
+      "description": "Chicken nuggets, bacon, country sausage gravy. Cheese curds, green onions"
+    },
+    {
+      "name": "Chicken tikka masal",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.93,
+      "order": 3,
+      "description": "Chicken, jalapeno masala gravy cheese curds, crema cilantro"
+    },
+    {
+      "name": "Chicken katsu curry",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.89,
+      "order": 4,
+      "description": "Panko crusted chicken, golden curry. Cheese curds, pickled radish. Green onions, togarashi"
+    },
+    {
+      "name": "Wagyu smash fries",
+      "price": 12.95,
+      "price_text": "$12.95",
+      "confidence": 0.89,
+      "order": 5,
+      "description": "2 wagyu beef patties, grilled onions, secret sauce, american cheese, diced pickles"
+    },
+    {
+      "name": "Loco moco",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.84,
+      "order": 6,
+      "description": "2 wagyu beef patties, grilled onions, fried egg, brown. Gravy, cheese curds, fried onions, ketchup glaze. Green onions"
+    },
+    {
+      "name": "Chili cheese fries",
+      "price": 11.95,
+      "price_text": "$11.95",
+      "confidence": 0.95,
+      "order": 7,
+      "description": "Kroft chill, cheese sauce, breadcrumbs,. Green onions"
+    },
+    {
+      "name": "Bbq wagyu smash fries",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.95,
+      "order": 8,
+      "description": "Sauce, american cheese, fried onions, green onions 2 wagyu beef patties, grilled onions, bacon, bbq"
+    }
+  ],
+  "Specials": [
+    {
+      "name": "Chicken parmesan poutine",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.92,
+      "order": 9,
+      "description": "French fries, fried cheese curds, chicken. Nuggets, marinara sauce, parmesan cheese"
+    },
+    {
+      "name": "Cheese steak fries",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.87,
+      "order": 10,
+      "description": "Sliced roaste beef, kroft cheese sauce,grilled onions, parsley, pepperoncini peppers"
+    },
+    {
+      "name": "Cheese steak sandwich",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.86,
+      "order": 11,
+      "description": "Potato roll, sliced roast beef, garlic. Mayo, grilled onions, swiss cheese"
+    }
+  ],
+  "Kids Menu": [
+    {
+      "name": "8pc nuggets with fries",
+      "price": 6.95,
+      "price_text": "$6.95",
+      "confidence": 0.96,
+      "order": 12,
+      "description": null
+    },
+    {
+      "name": "Mac n' cheese",
+      "price": 5.45,
+      "price_text": "$5.45",
+      "confidence": 0.82,
+      "order": 13,
+      "description": null
+    },
+    {
+      "name": "Mac n' marinara",
+      "price": 5.0,
+      "price_text": "$5.00",
+      "confidence": 0.83,
+      "order": 14,
+      "description": null
+    },
+    {
+      "name": "Milk",
+      "price": 3.0,
+      "price_text": "$3.00",
+      "confidence": 0.82,
+      "order": 15,
+      "description": null
+    }
+  ],
+  "Sandwiches": [
+    {
+      "name": "Chicken parmesan",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.91,
+      "order": 16,
+      "description": "Panko crusted chicken breast, provolone cheese, marinara sauce, parmesan cheese, parsley, garlic mayo,. Potato roll"
+    },
+    {
+      "name": "Kroft fried chicken",
+      "price": 13.95,
+      "price_text": "$13.95",
+      "confidence": 0.86,
+      "order": 17,
+      "description": "Potato roll, fried chicken breast jalapeno coleslaw, garlic aioli, extra spicy +$1"
+    },
+    {
+      "name": "Braised beef melt",
+      "price": 12.95,
+      "price_text": "$12.95",
+      "confidence": 0.85,
+      "order": 18,
+      "description": "Ciabatta, 5 hr braised beef, monterey jack. Arugula, pickled red onions"
+    },
+    {
+      "name": "Porchetta",
+      "price": 12.95,
+      "price_text": "$12.95",
+      "confidence": 0.78,
+      "order": 19,
+      "description": "Ciabatta, pork belly, loin, cracklings. Arugula, caramelized onions, salsa verde"
+    },
+    {
+      "name": "Cubano",
+      "price": 12.95,
+      "price_text": "$12.95",
+      "confidence": 0.73,
+      "order": 20,
+      "description": "Potato roll, pulled pork, ham pickles, swiss cheese, mustard aioli"
+    },
+    {
+      "name": "French dip",
+      "price": 12.95,
+      "price_text": "$12.95",
+      "confidence": 0.9,
+      "order": 21,
+      "description": "Potato roll, sliced rotisserie beef caramelized onions, beef au jus,. Horseradish aioli"
+    }
+  ]
+}
