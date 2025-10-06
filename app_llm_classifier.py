@@ -13,10 +13,10 @@ from surya.recognition import RecognitionPredictor
 from surya.foundation import FoundationPredictor
 
 # Our new classifiers
-from llm_classifier import MenuLineClassifier
+from llm_classifier_v2 import ImprovedMenuLineClassifier
 from menu_assembler import MenuAssembler
 
-app = FastAPI(title="Menu OCR with LLM Classification")
+app = FastAPI(title="Menu OCR with Improved LLM Classification")
 
 # Initialize predictors
 print("🔧 Initializing Surya OCR...")
@@ -24,8 +24,8 @@ foundation_predictor = FoundationPredictor()
 det_predictor = DetectionPredictor()
 rec_predictor = RecognitionPredictor(foundation_predictor=foundation_predictor)
 
-print("🤖 Initializing LLM Classifier...")
-classifier = MenuLineClassifier()
+print("🤖 Initializing Improved LLM Classifier v2...")
+classifier = ImprovedMenuLineClassifier()
 
 print("🔨 Initializing Menu Assembler...")
 assembler = MenuAssembler()
