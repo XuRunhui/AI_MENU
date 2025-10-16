@@ -50,10 +50,14 @@ Return JSON: [{"id":"...","label":"...","confidence":0..1}]"""
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"🔧 Loading LLM on device: {self.device}")
 
+        # Load AWQ quantized model with proper settings
         self.model = AutoModelForCausalLM.from_pretrained(
             model_path,
-            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
-        ).to(self.device)
+            device_map="auto" if self.device == "cuda" else None,
+            low_cpu_mem_usage=True
+        )
+        if self.device == "cpu":
+            self.model = self.model.to(self.device)
         self.model.eval()
 
     def aggressive_heuristic(self, text: str, bbox: List[List[float]],
@@ -324,13 +328,29 @@ Return JSON: [{"id":"...","label":"...","confidence":0..1}]"""
         # Sort by original order
         classifications.sort(key=lambda c: int(c.id.split('_')[1]))
 
+        # Print detailed results for each line
+        print(f"\n{'='*70}")
+        print(f"📋 DETAILED CLASSIFICATION RESULTS")
+        print(f"{'='*70}")
+        for i, cls in enumerate(classifications):
+            # Get original text
+            orig_text = ocr_results[i][1]
+            text_clean = re.sub(r'<[^>]+>', '', orig_text).strip()
+
+            # Truncate long text for display
+            display_text = text_clean[:50] + "..." if len(text_clean) > 50 else text_clean
+
+            print(f"{i:3d}. [{cls.label:11s}] (conf: {cls.confidence:.2f}, method: {cls.method:20s}) | {display_text}")
+        print(f"{'='*70}\n")
+
         # Print summary
         from collections import Counter
         label_counts = Counter(c.label for c in classifications)
-        print(f"\n📊 Final classification:")
+        print(f"📊 CLASSIFICATION SUMMARY:")
         for label, count in sorted(label_counts.items()):
             methods = Counter(c.method for c in classifications if c.label == label)
             methods_str = ", ".join(f"{m}:{c}" for m, c in methods.most_common(3))
             print(f"  {label}: {count} ({methods_str})")
+        print()
 
         return classifications

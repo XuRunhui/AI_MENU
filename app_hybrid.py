@@ -7,7 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import numpy as np
+import os
+from pathlib import Path
 from typing import List
+from huggingface_hub import snapshot_download
 
 from surya.detection import DetectionPredictor
 from surya.recognition import RecognitionPredictor
@@ -34,8 +37,73 @@ app.add_middleware(
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Initialize
-print("🔧 Initializing Surya OCR...")
+# Model configuration
+MODEL_DIR = "/data/models"
+MODEL_NAME = "qwen2.5-14b-instruct-awq"
+MODEL_REPO = "Qwen/Qwen2.5-14B-Instruct-AWQ"
+MODEL_PATH = f"{MODEL_DIR}/{MODEL_NAME}"
+
+def ensure_model_available():
+    """Check if model exists, download if not."""
+    model_path = Path(MODEL_PATH)
+
+    # Check if model exists
+    if model_path.exists():
+        # Check for essential files
+        required_files = ["config.json", "tokenizer_config.json"]
+        has_all_files = all((model_path / file).exists() for file in required_files)
+
+        # Check for weight files
+        weight_patterns = ["*.safetensors", "*.bin", "*.pt"]
+        has_weights = any(list(model_path.glob(pattern)) for pattern in weight_patterns)
+
+        if has_all_files and has_weights:
+            print(f"✅ Model found at: {model_path}")
+            return str(model_path)
+        else:
+            print(f"⚠️  Model directory incomplete, re-downloading...")
+    else:
+        print(f"⚠️  Model not found at: {model_path}")
+
+    # Create directory if needed
+    model_dir = Path(MODEL_DIR)
+    if not model_dir.exists():
+        print(f"📁 Creating model directory: {MODEL_DIR}")
+        model_dir.mkdir(parents=True, exist_ok=True)
+
+    # Download model
+    print(f"\n{'='*70}")
+    print(f"📥 Downloading model: {MODEL_REPO}")
+    print(f"📂 Destination: {MODEL_PATH}")
+    print(f"   This may take several minutes...")
+    print(f"{'='*70}\n")
+
+    try:
+        snapshot_download(
+            repo_id=MODEL_REPO,
+            local_dir=str(model_path),
+            local_dir_use_symlinks=False,
+            resume_download=True,
+        )
+
+        print(f"\n{'='*70}")
+        print(f"✅ Model downloaded successfully!")
+        print(f"📂 Location: {model_path}")
+        print(f"{'='*70}\n")
+
+        return str(model_path)
+
+    except Exception as e:
+        print(f"\n{'='*70}")
+        print(f"❌ Error downloading model: {e}")
+        print(f"{'='*70}\n")
+        raise
+
+# Initialize - check and download model first
+print("🔍 Checking model availability...")
+ensure_model_available()
+
+print("\n🔧 Initializing Surya OCR...")
 foundation_predictor = FoundationPredictor()
 det_predictor = DetectionPredictor()
 rec_predictor = RecognitionPredictor(foundation_predictor=foundation_predictor)
