@@ -79,6 +79,7 @@ class MenuAssembler:
         # Match dishes to prices by Y-proximity
         menu_items = []
         current_category = "Other"
+        used_price_indices = set()
 
         # Sort categories by Y position
         categories.sort(key=lambda x: x['y_center'])
@@ -97,6 +98,8 @@ class MenuAssembler:
             min_distance = float('inf')
 
             for price in prices:
+                if price['index'] in used_price_indices:
+                    continue
                 y_distance = abs(price['y_center'] - dish['y_center'])
                 if y_distance < y_threshold and y_distance < min_distance:
                     min_distance = y_distance
@@ -107,6 +110,7 @@ class MenuAssembler:
             price_text = None
             if closest_price:
                 price_val, price_text = self.extract_price_value(closest_price['text'])
+                used_price_indices.add(closest_price['index'])
 
             # Find descriptions (below the dish, close Y proximity)
             dish_descriptions = []
